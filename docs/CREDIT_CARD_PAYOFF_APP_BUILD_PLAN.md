@@ -496,7 +496,7 @@ All development and testing happens locally on your machine. The production serv
 - **Docker Desktop** installed and running
 - **Node.js 20+** (for running CLI tools, linting, etc.)
 - **Git** for version control
-- **VS Code** or your preferred editor
+- **VSCodium** or your preferred editor
 - A modern browser (Chrome recommended)
 
 ### Local Development Workflow

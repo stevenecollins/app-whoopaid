@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhooPaid</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YcnS/1WR6zNg1OFb5CLiGmGmGgkqBE9WGJ0"
+        crossorigin="anonymous">
+</head>
+<body class="bg-light">
+  <div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center">
+      <div class="col-12 col-md-6 text-center">
+        <h1 class="display-4 fw-bold text-primary mb-3">WhooPaid</h1>
+        <p class="lead text-muted mb-4">Credit Card Payoff Tracker</p>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <p class="card-text fw-semibold" id="status">Checking server status...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    fetch('/health')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var el = document.getElementById('status');
+        if (data.status === 'healthy') {
+          el.textContent = 'Server is running. Database connected.';
+          el.className = 'card-text fw-semibold text-success';
+        } else {
+          el.textContent = 'Server is running. Database disconnected.';
+          el.className = 'card-text fw-semibold text-warning';
+        }
+      })
+      .catch(function() {
+        var el = document.getElementById('status');
+        el.textContent = 'Unable to reach server.';
+        el.className = 'card-text fw-semibold text-danger';
+      });
+  </script>
+</body>
+</html>
