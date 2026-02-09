@@ -6,3 +6,138 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum PayoffStrategy {
+  avalanche
+  snowball
+}
+
+enum UserRole {
+  owner
+  member
+}
+
+enum PaymentType {
+  autopay_minimum
+  extra
+  snowflake
+  full_payoff
+}
+
+enum InviteStatus {
+  pending
+  accepted
+  expired
+}
+
+model Household {
+  id                 String         @id @default(uuid()) @db.Uuid
+  name               String         @db.VarChar(100)
+  monthlyExtraBudget Decimal        @default(0) @map("monthly_extra_budget") @db.Decimal(10, 2)
+  payoffStrategy     PayoffStrategy @default(avalanche) @map("payoff_strategy")
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+
+  users            User[]
+  cards            Card[]
+  payments         Payment[]
+  balanceSnapshots BalanceSnapshot[]
+  invites          HouseholdInvite[]
+
+  @@map("households")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  householdId  String   @map("household_id") @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  firstName    String   @map("first_name") @db.VarChar(50)
+  lastName     String   @map("last_name") @db.VarChar(50)
+  role         UserRole @default(member)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  household   Household         @relation(fields: [householdId], references: [id])
+  cards       Card[]
+  sentInvites HouseholdInvite[]
+
+  @@map("users")
+}
+
+model Card {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  householdId     String   @map("household_id") @db.Uuid
+  cardName        String   @map("card_name") @db.VarChar(100)
+  issuer          String   @db.VarChar(100)
+  lastFour        String   @map("last_four") @db.VarChar(4)
+  currentBalance  Decimal  @map("current_balance") @db.Decimal(10, 2)
+  creditLimit     Decimal  @map("credit_limit") @db.Decimal(10, 2)
+  apr             Decimal  @db.Decimal(5, 3)
+  minimumPayment  Decimal  @map("minimum_payment") @db.Decimal(10, 2)
+  dueDay          Int      @map("due_day")
+  autopayEnabled  Boolean  @default(true) @map("autopay_enabled")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user             User              @relation(fields: [userId], references: [id])
+  household        Household         @relation(fields: [householdId], references: [id])
+  payments         Payment[]
+  balanceSnapshots BalanceSnapshot[]
+
+  @@index([householdId, userId, isActive])
+  @@map("cards")
+}
+
+model Payment {
+  id            String      @id @default(uuid()) @db.Uuid
+  cardId        String      @map("card_id") @db.Uuid
+  householdId   String      @map("household_id") @db.Uuid
+  paymentDate   DateTime    @map("payment_date") @db.Date
+  amount        Decimal     @db.Decimal(10, 2)
+  minimumAmount Decimal     @map("minimum_amount") @db.Decimal(10, 2)
+  extraAmount   Decimal     @map("extra_amount") @db.Decimal(10, 2)
+  paymentType   PaymentType @map("payment_type")
+  notes         String?     @db.VarChar(255)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+
+  card      Card      @relation(fields: [cardId], references: [id])
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@index([cardId, paymentDate])
+  @@map("payments")
+}
+
+model BalanceSnapshot {
+  id           String   @id @default(uuid()) @db.Uuid
+  cardId       String   @map("card_id") @db.Uuid
+  householdId  String   @map("household_id") @db.Uuid
+  snapshotDate DateTime @map("snapshot_date") @db.Date
+  balance      Decimal  @db.Decimal(10, 2)
+  creditLimit  Decimal  @map("credit_limit") @db.Decimal(10, 2)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  card      Card      @relation(fields: [cardId], references: [id])
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@index([householdId, snapshotDate])
+  @@map("balance_snapshots")
+}
+
+model HouseholdInvite {
+  id          String       @id @default(uuid()) @db.Uuid
+  householdId String       @map("household_id") @db.Uuid
+  email       String       @db.VarChar(255)
+  invitedBy   String       @map("invited_by") @db.Uuid
+  token       String       @unique @db.VarChar(255)
+  status      InviteStatus @default(pending)
+  expiresAt   DateTime     @map("expires_at") @db.Timestamptz()
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+
+  household Household @relation(fields: [householdId], references: [id])
+  inviter   User      @relation(fields: [invitedBy], references: [id])
+
+  @@map("household_invites")
+}

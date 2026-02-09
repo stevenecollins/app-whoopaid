@@ -2,6 +2,10 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/auth.js';
+import householdRoutes from './routes/household.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -9,11 +13,10 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// JSON parsing
+// Middleware
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check endpoint
 app.get('/health', async (_req, res) => {
@@ -32,6 +35,13 @@ app.get('/health', async (_req, res) => {
     });
   }
 });
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/household', householdRoutes);
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
