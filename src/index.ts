@@ -5,6 +5,8 @@ import { PrismaClient } from '@prisma/client';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import householdRoutes from './routes/household.js';
+import cardRoutes from './routes/cards.js';
+import paymentRoutes from './routes/payments.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -39,6 +41,8 @@ app.get('/health', async (_req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/household', householdRoutes);
+app.use('/api/cards', cardRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Global error handler (must be last)
 app.use(errorHandler);
