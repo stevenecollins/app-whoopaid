@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import householdRoutes from './routes/household.js';
 import cardRoutes from './routes/cards.js';
 import paymentRoutes from './routes/payments.js';
+import payoffRoutes from './routes/payoff.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/household', householdRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/payoff', payoffRoutes);
 
 // Global error handler (must be last)
 app.use(errorHandler);

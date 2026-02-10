@@ -69,21 +69,21 @@
 - [x] Test: card operations respect household isolation
 - [x] Test: payment recording creates correct records
 
-## Phase 4: Payoff Engine
+## Phase 4: Payoff Engine ✅
 
-- [ ] Implement avalanche sorting (highest APR first)
-- [ ] Implement snowball sorting (lowest balance first)
-- [ ] Build monthly allocation algorithm (extra budget distribution)
-- [ ] Implement debt cascade (freed minimums roll to next card)
-- [ ] Build payoff timeline projection (month-by-month forecast)
-- [ ] Calculate total interest cost under current plan
-- [ ] Build "this month's budget override" feature
-- [ ] Build payment suggestion endpoint
-- [ ] Build "what if" simulation endpoint (does not save data)
-- [ ] Test: avalanche vs snowball produce different allocations
-- [ ] Test: cascade correctly frees minimum payments
-- [ ] Test: simulation does not modify database
-- [ ] Test: budget override recalculates suggestions correctly
+- [x] Implement avalanche sorting (highest APR first)
+- [x] Implement snowball sorting (lowest balance first)
+- [x] Build monthly allocation algorithm (extra budget distribution)
+- [x] Implement debt cascade (freed minimums roll to next card)
+- [x] Build payoff timeline projection (month-by-month forecast)
+- [x] Calculate total interest cost under current plan
+- [x] Build "this month's budget override" feature
+- [x] Build payment suggestion endpoint
+- [x] Build "what if" simulation endpoint (does not save data)
+- [x] Test: avalanche vs snowball produce different allocations
+- [x] Test: cascade correctly frees minimum payments
+- [x] Test: simulation does not modify database
+- [x] Test: budget override recalculates suggestions correctly
 
 ## Phase 5: Credit Utilization
 
@@ -179,6 +179,9 @@ Full Prisma schema with 6 tables (households, users, cards, payments, balance_sn
 ### Phase 3 Review
 Created src/routes/cards.ts (5 endpoints) and src/routes/payments.ts (3 endpoints). Card CRUD with full validation, household-scoped queries, and automatic balance snapshot creation on card create and balance update (using Prisma transactions). Payment recording with auto-split logic: snowflake (all extra), autopay_minimum (all minimum), extra/full_payoff (split at card's minimum payment). Payment history with filters (cardId, userId, date range). Monthly payment summary with aggregation by card and by user. All endpoints tested including household isolation (second household cannot see first household's data) and validation error cases.
 
+### Phase 4 Review
+Created src/utils/payoffEngine.ts (pure calculation engine, no Prisma/Express dependency) and src/routes/payoff.ts (3 endpoints). The engine implements avalanche sorting (highest APR first, ties by lowest balance) and snowball sorting (lowest balance first, ties by highest APR). Core calculatePayoffPlan function runs a month-by-month simulation capped at 360 months: applies interest, deducts minimums, allocates extra budget by strategy priority, and cascades freed minimums when cards are paid off. GET /api/payoff/plan returns payment instructions and summary (supports ?budget= override without modifying saved settings). GET /api/payoff/timeline returns full month-by-month projection for charts. POST /api/payoff/simulate runs what-if comparisons (oneTimePayment, budgetChange, strategy) without modifying the database. All monetary calculations use Number() with roundCents() rounding, consistent with existing codebase. All 4 test scenarios verified via curl: avalanche vs snowball produce different allocations, cascade correctly frees minimums, simulation is read-only, budget override is temporary.
+
 ---
 
 ## Change Log
@@ -188,4 +191,5 @@ Created src/routes/cards.ts (5 endpoints) and src/routes/payments.ts (3 endpoint
 | 2026-02-09 | Phase 1 | Project infrastructure, Docker, Express, health check |
 | 2026-02-09 | Phase 2 | Prisma schema, auth routes, JWT, middleware, invite system |
 | 2026-02-10 | Phase 3 | Card CRUD (5 endpoints), Payment API (3 endpoints), auto-split, balance snapshots |
+| 2026-02-10 | Phase 4 | Payoff engine (3 endpoints), avalanche/snowball sorting, debt cascade, timeline projection, what-if simulation |
 
