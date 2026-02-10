@@ -31,43 +31,43 @@
 
 ---
 
-## Phase 1: Project Setup & Infrastructure
+## Phase 1: Project Setup & Infrastructure ✅
 
-- [ ] Provision fresh Ubuntu 24.04 server (owner handles this)
-- [ ] Install Docker and Docker Compose
-- [ ] Create project directory structure
-- [ ] Initialize Node.js project with TypeScript
-- [ ] Set up Docker Compose (app, postgres, nginx)
-- [ ] Configure environment variables
-- [ ] Set up Prisma ORM with PostgreSQL connection
-- [ ] Verify database connection and basic health check endpoint
-- [ ] Set up DNS for app.whoopaid.com (owner handles this)
-- [ ] Configure nginx reverse proxy with SSL (Let's Encrypt)
+- [x] Provision fresh Ubuntu 24.04 server (owner handles this)
+- [x] Install Docker and Docker Compose
+- [x] Create project directory structure
+- [x] Initialize Node.js project with TypeScript
+- [x] Set up Docker Compose (app, postgres, nginx)
+- [x] Configure environment variables
+- [x] Set up Prisma ORM with PostgreSQL connection
+- [x] Verify database connection and basic health check endpoint
+- [x] Set up DNS for app.whoopaid.com (owner handles this)
+- [x] Configure nginx reverse proxy with SSL (Let's Encrypt)
 
-## Phase 2: Database & Authentication
+## Phase 2: Database & Authentication ✅
 
-- [ ] Create Prisma schema (all tables from build plan Section 5)
-- [ ] Run initial migration
-- [ ] Build auth routes: register, login, logout
-- [ ] Implement JWT with httpOnly cookies
-- [ ] Build auth middleware (household scoping on every request)
-- [ ] Build household invite system (create invite, accept invite)
-- [ ] Implement rate limiting on auth routes
-- [ ] Test: user registration creates household
-- [ ] Test: invited user joins existing household
-- [ ] Test: users cannot access other households' data
+- [x] Create Prisma schema (all tables from build plan Section 5)
+- [x] Run initial migration
+- [x] Build auth routes: register, login, logout
+- [x] Implement JWT with httpOnly cookies
+- [x] Build auth middleware (household scoping on every request)
+- [x] Build household invite system (create invite, accept invite)
+- [x] Implement rate limiting on auth routes
+- [x] Test: user registration creates household
+- [x] Test: invited user joins existing household
+- [x] Test: users cannot access other households' data
 
-## Phase 3: Core API — Cards & Payments
+## Phase 3: Core API — Cards & Payments ✅
 
-- [ ] Build card CRUD endpoints (create, read, update, deactivate)
-- [ ] Ensure all card queries are scoped to household_id
-- [ ] Build balance snapshot auto-creation on card balance update
-- [ ] Build payment recording endpoint
-- [ ] Auto-split payment into minimum + extra portions
-- [ ] Build payment history endpoint with filters (card, user, date range)
-- [ ] Build monthly payment summary endpoint
-- [ ] Test: card operations respect household isolation
-- [ ] Test: payment recording creates correct records
+- [x] Build card CRUD endpoints (create, read, update, deactivate)
+- [x] Ensure all card queries are scoped to household_id
+- [x] Build balance snapshot auto-creation on card balance update
+- [x] Build payment recording endpoint
+- [x] Auto-split payment into minimum + extra portions
+- [x] Build payment history endpoint with filters (card, user, date range)
+- [x] Build monthly payment summary endpoint
+- [x] Test: card operations respect household isolation
+- [x] Test: payment recording creates correct records
 
 ## Phase 4: Payoff Engine
 
@@ -170,7 +170,14 @@
 
 ## Review
 
-*This section will be updated after each phase is complete with a summary of changes made, decisions taken, and any issues encountered.*
+### Phase 1 Review
+Infrastructure stood up: Docker Compose with PostgreSQL 16, Node.js app (tsx watch for hot reload), and Nginx reverse proxy. Express entry point with /health endpoint. Bootstrap 5 placeholder page.
+
+### Phase 2 Review
+Full Prisma schema with 6 tables (households, users, cards, payments, balance_snapshots, household_invites) and 4 enums. Auth routes with registration (creates household + owner), login, logout, invite/accept. JWT in httpOnly cookies (7-day expiry). requireAuth and requireOwner middleware. Rate limiting (5/15min) on auth routes. All tested via curl.
+
+### Phase 3 Review
+Created src/routes/cards.ts (5 endpoints) and src/routes/payments.ts (3 endpoints). Card CRUD with full validation, household-scoped queries, and automatic balance snapshot creation on card create and balance update (using Prisma transactions). Payment recording with auto-split logic: snowflake (all extra), autopay_minimum (all minimum), extra/full_payoff (split at card's minimum payment). Payment history with filters (cardId, userId, date range). Monthly payment summary with aggregation by card and by user. All endpoints tested including household isolation (second household cannot see first household's data) and validation error cases.
 
 ---
 
@@ -178,5 +185,7 @@
 
 | Date | Phase | Summary |
 |------|-------|---------|
-| | | |
+| 2026-02-09 | Phase 1 | Project infrastructure, Docker, Express, health check |
+| 2026-02-09 | Phase 2 | Prisma schema, auth routes, JWT, middleware, invite system |
+| 2026-02-10 | Phase 3 | Card CRUD (5 endpoints), Payment API (3 endpoints), auto-split, balance snapshots |
 
